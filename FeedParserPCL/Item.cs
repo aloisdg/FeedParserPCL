@@ -17,9 +17,6 @@ namespace FeedParserPCL
 		public DateTime PublishDate { get; set; }
 		public FeedType FeedType { get; set; }
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="FeedParserPCL"/> class.
-		/// </summary>
 		public Item()
 		{
 			Link = string.Empty;
