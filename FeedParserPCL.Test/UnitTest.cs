@@ -13,7 +13,8 @@ namespace FeedParserPCL.Test
 	[TestFixture]
 	public class UnitTest
 	{
-		private readonly Func<string, FeedType, int> _countItems = (content, type) => new FeedParser().Parse(content, type).Count();
+		private readonly Func<string, FeedType, int> _countItems = (content, type)
+			=> new FeedParser().Parse(content, type).Count();
 
 		[TestCase("https://www.reddit.com/r/csharp.rss", FeedType.Rss, 26, Description = "Test RSS")]
 		[TestCase("https://xkcd.com/atom.xml", FeedType.Atom, 4, Description = "Test ATOM")]
@@ -29,8 +30,9 @@ namespace FeedParserPCL.Test
 		[TestCase(".rdf", FeedType.Rdf, Result = 10, Description = "Test RDF")]
 		public int TestFromLocal(string extension, FeedType type)
 		{
-			var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\File\test" + extension);
-			var content = File.ReadAllText(path);
+			var content = File.ReadAllText(Path.Combine(
+				AppDomain.CurrentDomain.BaseDirectory,
+				@"..\..\File\test" + extension));
 			return _countItems(content, type);
 		}
 	}
