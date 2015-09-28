@@ -12,18 +12,12 @@ namespace FeedParserPCL.Sample
         {
                 internal static void Main()
                 {
-	                string rss = "https://www.reddit.com/r/csharp.rss";
-	                string atom = "https://xkcd.com/atom.xml";
-			string rdf = "http://planetrdf.com/guide/rss.rdf";
-
-	                using (var wc = new System.Net.WebClient())
-	                {
-		                Debug.WriteLine(wc.DownloadString(rdf));
-	                }
-
-
+	                const string rss = "https://www.reddit.com/r/csharp.rss";
+	                const string atom = "https://xkcd.com/atom.xml";
+			const string rdf = "http://planetrdf.com/guide/rss.rdf";
                         var parser = new FeedParser();
-                        var rssItems = parser.Parse(rss, FeedType.Rss);
+
+			var rssItems = parser.Parse(rss, FeedType.Rss);
                         Console.WriteLine(rssItems.Count);
 
 	                var atomItems = parser.Parse(atom, FeedType.Atom);
