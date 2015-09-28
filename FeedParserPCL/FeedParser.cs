@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace FeedParserPCL
 {
@@ -20,28 +22,37 @@ namespace FeedParserPCL
 		/// <param name="feedType">The feed type.</param>
 		/// <returns>A list of items</returns>
 		/// <exception cref="NotSupportedException">This FeedType is not supported.</exception>
-		public IList<Item> Parse(string url, FeedType feedType)
+		public async Task<IEnumerable<Item>> Parse(Uri url, FeedType feedType)
+		{
+			using (var httpClient = new HttpClient())
+			{
+				var content = await httpClient.GetStringAsync(url).ConfigureAwait(false);
+				return Parse(content, feedType);
+			}
+		}
+
+		public IEnumerable<Item> Parse(string content, FeedType feedType)
 		{
 			switch (feedType)
 			{
-				case FeedType.Rss: return ParseRss(url);
-				case FeedType.Rdf: return ParseRdf(url);
-				case FeedType.Atom: return ParseAtom(url);
-				default: throw new NotSupportedException($"{feedType} is not supported");
+				case FeedType.Rss: return ParseRss(content);
+				case FeedType.Rdf: return ParseRdf(content);
+				case FeedType.Atom: return ParseAtom(content);
+				default: throw new NotSupportedException(feedType + " is not supported");
 			}
 		}
 
 		/// <summary>
 		/// Parses an Atom feed and returns a list of items.
 		/// </summary>
-		/// <param name="url">The url.</param>
+		/// <param name="content"></param>
 		/// <returns>A list of items</returns>
-		public virtual IList<Item> ParseAtom(string url)
+		public virtual IEnumerable<Item> ParseAtom(string content)
 		{
 			try
 			{
-				var doc = XDocument.Load(url); // remove
-				var entries = from item in doc.Root.Elements().Where(i => i.Name.LocalName.Equals("entry"))
+				var doc = XDocument.Parse(content);
+				return from item in doc.Root.Elements().Where(i => i.Name.LocalName.Equals("entry"))
 					      select new Item
 						{
 						     FeedType = FeedType.Atom,
@@ -50,7 +61,6 @@ namespace FeedParserPCL
 						     PublishDate = ParseDate(item.Elements().First(i => i.Name.LocalName == "updated").Value),
 						     Title = item.Elements().First(i => i.Name.LocalName == "title").Value
 						};
-				return entries.ToList();
 			}
 			catch (Exception ex)
 			{
@@ -62,14 +72,15 @@ namespace FeedParserPCL
 		/// <summary>
 		/// Parses an RSS feed and returns a list of items.
 		/// </summary>
+		/// <param name="content"></param>
 		/// <param name="url">The url.</param>
 		/// <returns>A list of items</returns>
-		public virtual IList<Item> ParseRss(string url)
+		public virtual IEnumerable<Item> ParseRss(string content)
 		{
 			try
 			{
-				var doc = XDocument.Load(url);
-				var entries = from item in doc.Root.Descendants().First(i => i.Name.LocalName == "channel").Elements().Where(i => i.Name.LocalName == "item")
+				var doc = XDocument.Parse(content);
+				return from item in doc.Root.Descendants().First(i => i.Name.LocalName == "channel").Elements().Where(i => i.Name.LocalName == "item")
 					      select new Item
 							     {
 								     FeedType = FeedType.Rss,
@@ -78,7 +89,6 @@ namespace FeedParserPCL
 								     PublishDate = ParseDate(item.Elements().First(i => i.Name.LocalName == "pubDate").Value),
 								     Title = item.Elements().First(i => i.Name.LocalName == "title").Value
 							     };
-				return entries.ToList();
 			}
 			catch (Exception ex)
 			{
@@ -90,15 +100,15 @@ namespace FeedParserPCL
 		/// <summary>
 		/// Parses an RDF feed and returns a list of items
 		/// </summary>
-		/// <param name="url">The url.</param>
+		/// <param name="content"></param>
 		/// <returns>A list of items</returns>
-		public virtual IList<Item> ParseRdf(string url)
+		public virtual IEnumerable<Item> ParseRdf(string content)
 		{
 			try
 			{
-				var doc = XDocument.Load(url);
+				var doc = XDocument.Parse(content);
 				// <item> is under the root
-				var entries = from item in doc.Root.Descendants().Where(i => i.Name.LocalName == "item")
+				return from item in doc.Root.Descendants().Where(i => i.Name.LocalName == "item")
 					      select new Item
 					      {
 						      FeedType = FeedType.Rdf,
@@ -107,7 +117,6 @@ namespace FeedParserPCL
 						      PublishDate = ParseDate(item.Elements().First(i => i.Name.LocalName == "date").Value),
 						      Title = item.Elements().First(i => i.Name.LocalName == "title").Value
 					      };
-				return entries.ToList();
 			}
 			catch (Exception ex)
 			{
