@@ -29,16 +29,11 @@ namespace FeedParserPCL
 			}
 		}
 
-		public IEnumerable<IItem> Parse(string content, FeedType feedType)
+		public static IEnumerable<IItem> Parse(string content, FeedType feedType)
 		{
 			var root = XDocument.Parse(content).Root;
 			if (root == null)
 				throw new FormatException("root");
-			return ParseXml(root, feedType);
-		}
-
-		private static IEnumerable<IItem> ParseXml(XContainer root, FeedType feedType)
-		{
 			switch (feedType)
 			{
 				case FeedType.Rss: return ParseRss(root);
