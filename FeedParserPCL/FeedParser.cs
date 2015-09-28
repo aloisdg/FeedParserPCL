@@ -2,12 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace FeedParserPCL
 {
-	using System.Diagnostics;
 	using System.Xml.Linq;
 
 	/// <summary>
@@ -42,59 +40,52 @@ namespace FeedParserPCL
 			}
 		}
 
+		private static readonly Func<XElement, string, XElement> Find =
+			(item, name) => item.Elements().First(i => i.Name.LocalName.Equals(name));
+
 		/// <summary>
 		/// Parses an Atom feed and returns a list of items.
 		/// </summary>
 		/// <param name="content"></param>
 		/// <returns>A list of items</returns>
-		public virtual IEnumerable<Item> ParseAtom(string content)
+		private static IEnumerable<Item> ParseAtom(string content)
 		{
-			try
-			{
-				var doc = XDocument.Parse(content);
-				return from item in doc.Root.Elements().Where(i => i.Name.LocalName.Equals("entry"))
-					      select new Item
-						{
-						     FeedType = FeedType.Atom,
-						     Content = item.Elements().First(i => i.Name.LocalName == "summary").Value,
-						     Link = item.Elements().First(i => i.Name.LocalName == "link").Attribute("href").Value,
-						     PublishDate = ParseDate(item.Elements().First(i => i.Name.LocalName == "updated").Value),
-						     Title = item.Elements().First(i => i.Name.LocalName == "title").Value
-						};
-			}
-			catch (Exception ex)
-			{
-				Debug.WriteLine(ex.Message);
-				return new List<Item>();
-			}
+			var root = XDocument.Parse(content).Root;
+			if (root == null)
+				throw new FormatException("root");
+			return from item in root
+				       .Elements().Where(i => i.Name.LocalName.Equals("entry"))
+			       select new Item
+			       {
+				       FeedType = FeedType.Atom,
+				       Content = Find(item, "summary").Value,
+				       Link = Find(item, "link").Attribute("href").Value,
+				       PublishDate = ParseDate(Find(item, "updated").Value),
+				       Title = Find(item, "title").Value
+			       };
 		}
 
 		/// <summary>
 		/// Parses an RSS feed and returns a list of items.
 		/// </summary>
 		/// <param name="content"></param>
-		/// <param name="url">The url.</param>
 		/// <returns>A list of items</returns>
-		public virtual IEnumerable<Item> ParseRss(string content)
+		private static IEnumerable<Item> ParseRss(string content)
 		{
-			try
-			{
-				var doc = XDocument.Parse(content);
-				return from item in doc.Root.Descendants().First(i => i.Name.LocalName == "channel").Elements().Where(i => i.Name.LocalName == "item")
-					      select new Item
-							     {
-								     FeedType = FeedType.Rss,
-								     Content = item.Elements().First(i => i.Name.LocalName == "description").Value,
-								     Link = item.Elements().First(i => i.Name.LocalName == "link").Value,
-								     PublishDate = ParseDate(item.Elements().First(i => i.Name.LocalName == "pubDate").Value),
-								     Title = item.Elements().First(i => i.Name.LocalName == "title").Value
-							     };
-			}
-			catch (Exception ex)
-			{
-				Debug.WriteLine(ex.Message);
-				return new List<Item>();
-			}
+			var root = XDocument.Parse(content).Root;
+			if (root == null)
+				throw new FormatException("root");
+			return from item in root
+				.Descendants().First(i => i.Name.LocalName == "channel")
+				.Elements().Where(i => i.Name.LocalName == "item")
+			       select new Item
+			       {
+				       FeedType = FeedType.Rss,
+				       Content = Find(item, "description").Value,
+				       Link = Find(item, "link").Value,
+				       PublishDate = ParseDate(Find(item, "pubDate").Value),
+				       Title = Find(item, "title").Value
+			       };
 		}
 
 		/// <summary>
@@ -102,27 +93,22 @@ namespace FeedParserPCL
 		/// </summary>
 		/// <param name="content"></param>
 		/// <returns>A list of items</returns>
-		public virtual IEnumerable<Item> ParseRdf(string content)
+		private static IEnumerable<Item> ParseRdf(string content)
 		{
-			try
-			{
-				var doc = XDocument.Parse(content);
-				// <item> is under the root
-				return from item in doc.Root.Descendants().Where(i => i.Name.LocalName == "item")
-					      select new Item
-					      {
-						      FeedType = FeedType.Rdf,
-						      Content = item.Elements().First(i => i.Name.LocalName == "description").Value,
-						      Link = item.Elements().First(i => i.Name.LocalName == "link").Value,
-						      PublishDate = ParseDate(item.Elements().First(i => i.Name.LocalName == "date").Value),
-						      Title = item.Elements().First(i => i.Name.LocalName == "title").Value
-					      };
-			}
-			catch (Exception ex)
-			{
-				Debug.WriteLine(ex);
-				return new List<Item>();
-			}
+			var root = XDocument.Parse(content).Root;
+			if (root == null)
+				throw new FormatException("root");
+			// <item> is under the root
+			return from item in root
+				       .Descendants().Where(i => i.Name.LocalName == "item")
+			       select new Item
+			       {
+				       FeedType = FeedType.Rdf,
+				       Content = Find(item, "description").Value,
+				       Link = Find(item, "link").Value,
+				       PublishDate = ParseDate(Find(item, "date").Value),
+				       Title = Find(item, "title").Value
+			       };
 		}
 
 		/// <summary>
