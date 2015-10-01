@@ -11,7 +11,7 @@ namespace FeedParserPCL
 	/// <summary>
 	/// A simple RSS, RDF and ATOM feed parser.
 	/// </summary>
-	public class FeedParser
+	public static class FeedParser
 	{
 		/// <summary>
 		/// Parses the given <see cref="FeedType"/> and returns a list of items/>.
@@ -20,7 +20,7 @@ namespace FeedParserPCL
 		/// <param name="feedType">The feed type.</param>
 		/// <returns>A list of items</returns>
 		/// <exception cref="NotSupportedException">This FeedType is not supported.</exception>
-		public async Task<IEnumerable<IItem>> Parse(Uri url, FeedType feedType)
+		public static async Task<IEnumerable<IItem>> Parse(Uri url, FeedType feedType)
 		{
 			using (var httpClient = new HttpClient())
 			{

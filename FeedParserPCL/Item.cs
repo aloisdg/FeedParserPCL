@@ -4,18 +4,18 @@ using System.Xml.Linq;
 
 namespace FeedParserPCL
 {
-        public interface IItem
-        {
+	public interface IItem
+	{
 		string Link { get; set; }
 		string Title { get; set; }
 		string Content { get; set; }
-		DateTime PublishDate { get;set; }
+		DateTime PublishDate { get; set; }
 		FeedType FeedType { get; }
 
-	        IItem Parse(XElement element);
-        }
+		IItem Parse(XElement element);
+	}
 
-	public abstract class AItem : IItem
+	internal abstract class AItem : IItem
 	{
 		public abstract FeedType FeedType { get; }
 		public abstract IItem Parse(XElement element);
@@ -42,7 +42,7 @@ namespace FeedParserPCL
 		}
 	}
 
-	public class AtomItem : AItem
+	internal class AtomItem : AItem
 	{
 		public override FeedType FeedType { get { return FeedType.Atom; } }
 
@@ -58,7 +58,7 @@ namespace FeedParserPCL
 		}
 	}
 
-	public class RssItem : AItem
+	internal class RssItem : AItem
 	{
 		public override FeedType FeedType { get { return FeedType.Rss; } }
 
@@ -71,15 +71,15 @@ namespace FeedParserPCL
 
 			return new RssItem
 			{
-			     Content = Find(element, content).Value,
-			     Link = Find(element, link).Value,
-			     PublishDate = ParseDate(Find(element, publishDate).Value),
-			     Title = Find(element, title).Value
+				Content = Find(element, content).Value,
+				Link = Find(element, link).Value,
+				PublishDate = ParseDate(Find(element, publishDate).Value),
+				Title = Find(element, title).Value
 			};
 		}
 	}
 
-	public class RdfItem : AItem
+	internal class RdfItem : AItem
 	{
 		public override FeedType FeedType { get { return FeedType.Rdf; } }
 
@@ -92,10 +92,10 @@ namespace FeedParserPCL
 
 			return new RdfItem
 			{
-			     Content = Find(element, content).Value,
-			     Link = Find(element, link).Value,
-			     PublishDate = ParseDate(Find(element, publishDate).Value),
-			     Title = Find(element, title).Value
+				Content = Find(element, content).Value,
+				Link = Find(element, link).Value,
+				PublishDate = ParseDate(Find(element, publishDate).Value),
+				Title = Find(element, title).Value
 			};
 		}
 	}
@@ -132,24 +132,24 @@ namespace FeedParserPCL
 	//	}
 	//}
 
-        /// <summary>
-        /// Represents a feed item.
-        /// </summary>
-        public class Item
-        {
-		public string Link { get; set; }
-		public string Title { get; set; }
-		public string Content { get; set; }
-		public DateTime PublishDate { get;set; }
-		public FeedType FeedType { get; set; }
+	///// <summary>
+	///// Represents a feed item.
+	///// </summary>
+	//public class Item
+	//{
+	//	public string Link { get; set; }
+	//	public string Title { get; set; }
+	//	public string Content { get; set; }
+	//	public DateTime PublishDate { get;set; }
+	//	public FeedType FeedType { get; set; }
 
-		//public Item()
-		//{
-		//	Link = string.Empty;
-		//	Title = string.Empty;
-		//	Content = string.Empty;
-		//	PublishDate = DateTime.Today;
-		//	FeedType = FeedType.Rss;
-		//}
-        }
+	//	//public Item()
+	//	//{
+	//	//	Link = string.Empty;
+	//	//	Title = string.Empty;
+	//	//	Content = string.Empty;
+	//	//	PublishDate = DateTime.Today;
+	//	//	FeedType = FeedType.Rss;
+	//	//}
+	//}
 }
