@@ -43,7 +43,7 @@ namespace FeedParserPCL {
         private static IEnumerable<IItem> ParseRss(XContainer root) {
             return root.Descendants ().First (i => i.Name.LocalName == "channel").Elements ()
                 .Where (i => i.Name.LocalName == "item")
-                .Select (i => new RssItem ().Parse (i));
+                .Select (item => new RssItem ().Parse (item));
         }
 
         /// <summary>

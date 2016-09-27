@@ -6,7 +6,6 @@ namespace FeedParserPCL.Item {
         private const string link = "link";
         private const string publishDate = "date";
         private const string title = "title";
-
         public override FeedType FeedType => FeedType.Rdf;
 
         public override IItem Parse(XElement element) => new RdfItem {
