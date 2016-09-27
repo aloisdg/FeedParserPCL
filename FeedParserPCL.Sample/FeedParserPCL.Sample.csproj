@@ -58,6 +58,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="File\test.rdf" />
+    <None Include="File\test.rss" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
@@ -65,6 +67,9 @@
       <Project>{D9605905-D2F7-4366-AA40-6BB302677391}</Project>
       <Name>FeedParserPCL</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="File\test.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
