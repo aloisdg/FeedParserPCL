@@ -13,16 +13,13 @@ namespace FeedParserPCL.Test
 	[TestFixture]
 	public class UnitTest
 	{
-		private readonly Func<string, FeedType, int> _countItems = (content, type)
-			=> new FeedParser().Parse(content, type).Count();
-
-		[TestCase("https://www.reddit.com/r/csharp.rss", FeedType.Rss, 26, Description = "Test RSS")]
-		[TestCase("https://xkcd.com/atom.xml", FeedType.Atom, 4, Description = "Test ATOM")]
-		[TestCase("http://planetrdf.com/guide/rss.rdf", FeedType.Rdf, 10, Description = "Test RDF")]
-		public async void Test(string url, FeedType type, int expected)
+		[TestCase("https://www.reddit.com/r/csharp.rss", FeedType.Rss, Description = "Test RSS")]
+		[TestCase("https://xkcd.com/atom.xml", FeedType.Atom, Description = "Test ATOM")]
+		[TestCase("http://planetrdf.com/guide/rss.rdf", FeedType.Rdf, Description = "Test RDF")]
+		public async void Test(string url, FeedType type)
 		{
-			var actual = await new FeedParser().Parse(new Uri(url, UriKind.Absolute), type);
-			Assert.AreEqual(actual.Count(), expected);
+			var actual = await FeedParser.Parse(new Uri(url, UriKind.Absolute), type);
+			Assert.IsTrue(actual.Any());
 		}
 
 		[TestCase(".rss", FeedType.Rss, Result = 26, Description = "Test RSS")]
@@ -33,7 +30,7 @@ namespace FeedParserPCL.Test
 			var content = File.ReadAllText(Path.Combine(
 				AppDomain.CurrentDomain.BaseDirectory,
 				@"..\..\File\test" + extension));
-			return _countItems(content, type);
+			return  FeedParser.Parse(content, type).Count();
 		}
 	}
 }

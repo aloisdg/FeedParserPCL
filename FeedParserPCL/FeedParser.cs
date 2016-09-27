@@ -11,7 +11,7 @@ namespace FeedParserPCL
 	/// <summary>
 	/// A simple RSS, RDF and ATOM feed parser.
 	/// </summary>
-	public class FeedParser
+	public static class FeedParser
 	{
 		/// <summary>
 		/// Parses the given <see cref="FeedType"/> and returns a list of items/>.
@@ -20,7 +20,7 @@ namespace FeedParserPCL
 		/// <param name="feedType">The feed type.</param>
 		/// <returns>A list of items</returns>
 		/// <exception cref="NotSupportedException">This FeedType is not supported.</exception>
-		public async Task<IEnumerable<Item>> Parse(Uri url, FeedType feedType)
+		public static async Task<IEnumerable<IItem>> Parse(Uri url, FeedType feedType)
 		{
 			using (var httpClient = new HttpClient())
 			{
@@ -29,97 +29,52 @@ namespace FeedParserPCL
 			}
 		}
 
-		public IEnumerable<Item> Parse(string content, FeedType feedType)
-		{
-			switch (feedType)
-			{
-				case FeedType.Rss: return ParseRss(content);
-				case FeedType.Rdf: return ParseRdf(content);
-				case FeedType.Atom: return ParseAtom(content);
-				default: throw new NotSupportedException(feedType + " is not supported");
-			}
-		}
-
-		private static readonly Func<XElement, string, XElement> Find =
-			(item, name) => item.Elements().First(i => i.Name.LocalName.Equals(name));
-
-		/// <summary>
-		/// Parses an Atom feed and returns a list of items.
-		/// </summary>
-		/// <param name="content"></param>
-		/// <returns>A list of items</returns>
-		private static IEnumerable<Item> ParseAtom(string content)
+		public static IEnumerable<IItem> Parse(string content, FeedType feedType)
 		{
 			var root = XDocument.Parse(content).Root;
 			if (root == null)
 				throw new FormatException("root");
-			return from item in root
-				       .Elements().Where(i => i.Name.LocalName.Equals("entry"))
-			       select new Item
-			       {
-				       FeedType = FeedType.Atom,
-				       Content = Find(item, "summary").Value,
-				       Link = Find(item, "link").Attribute("href").Value,
-				       PublishDate = ParseDate(Find(item, "updated").Value),
-				       Title = Find(item, "title").Value
-			       };
+			switch (feedType)
+			{
+				case FeedType.Rss: return ParseRss(root);
+				case FeedType.Rdf: return ParseRdf(root);
+				case FeedType.Atom: return ParseAtom(root);
+				default: throw new NotSupportedException(feedType + " is not supported");
+			}
+		}
+
+		/// <summary>
+		/// Parses an Atom feed and returns a list of items.
+		/// </summary>
+		/// <returns>A list of items</returns>
+		private static IEnumerable<IItem> ParseAtom(XContainer root)
+		{
+			return root.Elements()
+				.Where(i => i.Name.LocalName.Equals("entry"))
+				.Select(item => new AtomItem().Parse(item));
 		}
 
 		/// <summary>
 		/// Parses an RSS feed and returns a list of items.
 		/// </summary>
-		/// <param name="content"></param>
 		/// <returns>A list of items</returns>
-		private static IEnumerable<Item> ParseRss(string content)
+		private static IEnumerable<IItem> ParseRss(XContainer root)
 		{
-			var root = XDocument.Parse(content).Root;
-			if (root == null)
-				throw new FormatException("root");
-			return from item in root
-				.Descendants().First(i => i.Name.LocalName == "channel")
+			return root.Descendants()
+				.First(i => i.Name.LocalName == "channel")
 				.Elements().Where(i => i.Name.LocalName == "item")
-			       select new Item
-			       {
-				       FeedType = FeedType.Rss,
-				       Content = Find(item, "description").Value,
-				       Link = Find(item, "link").Value,
-				       PublishDate = ParseDate(Find(item, "pubDate").Value),
-				       Title = Find(item, "title").Value
-			       };
+				.Select(item => new RssItem().Parse(item));
 		}
 
 		/// <summary>
 		/// Parses an RDF feed and returns a list of items
 		/// </summary>
-		/// <param name="content"></param>
 		/// <returns>A list of items</returns>
-		private static IEnumerable<Item> ParseRdf(string content)
+		private static IEnumerable<IItem> ParseRdf(XContainer root)
 		{
-			var root = XDocument.Parse(content).Root;
-			if (root == null)
-				throw new FormatException("root");
-			// <item> is under the root
-			return from item in root
-				       .Descendants().Where(i => i.Name.LocalName == "item")
-			       select new Item
-			       {
-				       FeedType = FeedType.Rdf,
-				       Content = Find(item, "description").Value,
-				       Link = Find(item, "link").Value,
-				       PublishDate = ParseDate(Find(item, "date").Value),
-				       Title = Find(item, "title").Value
-			       };
-		}
-
-		/// <summary>
-		/// Try to parse a Date.
-		/// </summary>
-		/// <param name="date">The string to parse to a DateTime</param>
-		/// <returns>The date in a DateTime format or the minimum value of DateTime in case of error.</returns>
-		private static DateTime ParseDate(string date)
-		{
-			DateTime result;
-			return DateTime.TryParse(date, out result) ? result : DateTime.MinValue;
+			return root.Descendants()
+				.Where(i => i.Name.LocalName == "item")
+				.Select(item => new RdfItem().Parse(item));
 		}
 	}
 }

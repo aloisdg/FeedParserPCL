@@ -19,19 +19,18 @@ namespace FeedParserPCL.Sample
 		static async void MainAsync()
 		{
 			const string rss = "https://www.reddit.com/r/csharp.rss";
-			const string atom = "https://xkcd.com/atom.xml";
+			const string atom = "https://xkcd.com/atFeedParserom.xml";
 			const string rdf = "http://planetrdf.com/guide/rss.rdf";
 
 			Func<string, Uri> toUri = url => new Uri(url, UriKind.Absolute);
-			var parser = new FeedParser();
 
-			var rssItems = await parser.Parse(toUri(rss), FeedType.Rss);
+			var rssItems = await FeedParser.Parse(toUri(rss), FeedType.Rss);
 			Console.WriteLine(rssItems.Count());
 
-			var atomItems = await parser.Parse(toUri(atom), FeedType.Atom);
+			var atomItems = await FeedParser.Parse(toUri(atom), FeedType.Atom);
 			Console.WriteLine(atomItems.Count());
 
-			var rdfItems = await parser.Parse(toUri(rdf), FeedType.Rdf);
+			var rdfItems = await FeedParser.Parse(toUri(rdf), FeedType.Rdf);
 			Console.WriteLine(rdfItems.Count());
 		}
         }
