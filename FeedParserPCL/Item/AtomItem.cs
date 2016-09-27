@@ -6,15 +6,11 @@ namespace FeedParserPCL.Item {
         private const string link = "link";
         private const string linkAttribute = "href";
         private const string publishDate = "updated";
-        private const string title = "title";
 
         public override FeedType FeedType => FeedType.Atom;
 
-        public override IItem Parse(XElement element) => new AtomItem {
-            Content = Find (element, content).Value,
-            Link = Find (element, link).Attribute (linkAttribute).Value,
-            PublishDate = ParseDate (Find (element, publishDate).Value),
-            Title = Find (element, title).Value
-        };
+        public AtomItem(XElement element) : base (element, content, publishDate) {
+            Link = element.Find(link).Attribute (linkAttribute).Value;
+        }
     }
 }

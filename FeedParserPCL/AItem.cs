@@ -1,19 +1,21 @@
 using System;
-using System.Linq;
 using System.Xml.Linq;
 
 namespace FeedParserPCL {
     internal abstract class AItem : IItem {
+        private const string title = "title";
+
         public abstract FeedType FeedType { get; }
-        public abstract IItem Parse(XElement element);
 
-        public string Link { get; set; }
-        public string Title { get; set; }
-        public string Content { get; set; }
-        public DateTime PublishDate { get; set; }
+        public string Link { get; protected set; }
+        public string Title { get; }
+        public string Content { get; }
+        public DateTime PublishDate { get; }
 
-        protected static XElement Find(XElement item, string name) {
-            return item.Elements ().First (i => i.Name.LocalName.Equals (name));
+        protected AItem(XElement element, string content, string publishDate) {
+            Content = element.FindValue (content);
+            Title = element.FindValue (title);
+            PublishDate = ParseDate (element.FindValue (publishDate));
         }
 
         /// <summary>

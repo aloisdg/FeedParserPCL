@@ -43,9 +43,11 @@
     <Compile Include="FeedParser.cs" />
     <Compile Include="FeedType.cs" />
     <Compile Include="IItem.cs" />
+    <Compile Include="Item\RdfBasedItem.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Item\RdfItem.cs" />
-    <Compile Include="Item\RssItem.cs" />
+    <Compile Include="Item\RdfBased\RdfItem.cs" />
+    <Compile Include="Item\RdfBased\RssItem.cs" />
+    <Compile Include="XElementExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System.Net.Http, Version=1.5.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
