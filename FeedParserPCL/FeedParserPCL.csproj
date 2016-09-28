@@ -39,6 +39,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AItem.cs" />
+    <Compile Include="AFeed.cs" />
+    <Compile Include="Feed\ARdfBased.cs" />
+    <Compile Include="Feed\Atom.cs" />
+    <Compile Include="Feed\RdfBased\Rdf.cs" />
+    <Compile Include="Feed\RdfBased\Rss.cs" />
     <Compile Include="Item\AtomItem.cs" />
     <Compile Include="FeedParser.cs" />
     <Compile Include="FeedType.cs" />

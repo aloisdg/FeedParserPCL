@@ -1,8 +1,7 @@
 using System.Linq;
 using System.Xml.Linq;
 
-namespace FeedParserPCL
-{
+namespace FeedParserPCL {
     internal static class XElementExtensions {
         internal static bool IsContainerName(this XElement element, string name) =>
             element.Name.LocalName.Equals (name);

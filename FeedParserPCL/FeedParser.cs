@@ -1,76 +1,35 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using FeedParserPCL.Item;
-using FeedParserPCL.Item.RdfBased;
+using System.Xml.Linq;
+using FeedParserPCL.Feed;
+using FeedParserPCL.Feed.RdfBased;
 
 namespace FeedParserPCL {
-    using System.Xml.Linq;
-
     /// <summary>
     /// A simple RSS, RDF and ATOM feed parser.
     /// </summary>
     public static class FeedParser {
-        private static Func<XElement, bool> IsNameIsItem => item => item.IsContainerName ("item");
-
-        private static IEnumerable<IItem> Filter(IEnumerable<XElement> x,
-            Func<XElement, bool> y,
-            Func<XElement, IItem> z
-            ) => x.Where (y).Select (z);
-
-        public static IEnumerable<IItem> Parse(string content, FeedType feedType) {
-            var root = XDocument.Parse (content).Root;
+        /// <summary>
+        /// Parse a feed base on its own type.
+        /// </summary>
+        /// <param name="feed">the feed to be parsed</param>
+        /// <param name="type">the feed's own type</param>
+        /// <returns>The content as a enumerable of item</returns>
+        /// <example>
+        /// var feed = FeedParser.Parse (File.ReadAllText ("./feed.rss), FeedType.Rss);
+        /// foreach (var item in feed)
+        ///     Console.WriteLine ($"{item.PublishDate} {item.Title}");
+        /// </example>
+        public static IEnumerable<IItem> Parse(string feed, FeedType type) {
+            var root = XDocument.Parse (feed).Root;
             if (root == null)
                 throw new FormatException (nameof (root));
-            switch (feedType) {
-                case FeedType.Rss:
-                    return root.Descendants ().First (item => item.IsContainerName ("channel")).Elements ()
-                        .Where (IsNameIsItem)
-                        .Select (item => new RssItem (item));
-                case FeedType.Rdf:
-                    return root.Descendants ()
-                        .Where (IsNameIsItem)
-                        .Select (item => new RdfItem (item));
-                case FeedType.Atom:
-                    return Atom.Create (root);
-                default:
-                    throw new NotSupportedException (feedType + " is not supported");
+            switch (type) {
+                case FeedType.Atom: return new Atom (root);
+                case FeedType.Rss: return new Rss (root);
+                case FeedType.Rdf: return new Rdf (root);
+                default: throw new NotSupportedException (type + " is not supported");
             }
         }
-
-        public static class Atom {
-            public static IEnumerable<IItem> Create(XElement element) {
-                return element.Elements ()
-                        .Where (item => item.IsContainerName ("entry"))
-                        .Select (item => new AtomItem (item));
-            }
-        }
-
-
-
-        //static class Atom
-        //{
-        //    const string ContainerName = "entry";
-
-        //    public static readonly Func<XContainer, IEnumerable<XElement>> Descendants = x => x.Elements();
-        //    public static Func<XElement, bool> Where => item => item.IsContainerName ("entry");
-        //    public static Func<XElement, IItem> Select => item => new AtomItem (item);
-        //    public static IEnumerable<IItem> Create(XElement element) => Descendants (element).Where (Where).Select (Select);
-
-        //}
-
-        //static class Rss {
-        //    public static readonly Func<XContainer, IEnumerable<XElement>> Descendants =
-        //        x => x.Descendants ().First (item => item.IsContainerName("channel")).Elements ();
-        //    public static Func<XElement, bool> Where => item => item.IsContainerName ("item");
-        //    public static Func<XElement, IItem> Select => item => new RssItem (item);
-        //}
-
-        //static class Rdf {
-        //    public static readonly Func<XContainer, IEnumerable<XElement>> Descendants = x => x.Descendants ();
-        //    public static Func<XElement, bool> Where => item => item.IsContainerName ("item");
-        //    public static Func<XElement, IItem> Select => item => new RdfItem (item);
-        //}
     }
 }
